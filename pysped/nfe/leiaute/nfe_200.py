@@ -1186,14 +1186,14 @@ class Imposto(nfe_110.Imposto):
             xml += self.ICMS.xml
             xml += self.IPI.xml
             xml += self.II.xml
+        else:
+            # ISSQN é esperado antes de PIS e COFINS
+            xml += self.ISSQN.xml
 
         xml += self.PIS.xml
         xml += self.PISST.xml
         xml += self.COFINS.xml
         xml += self.COFINSST.xml
-
-        if self.ISSQN.cSitTrib.valor:
-            xml += self.ISSQN.xml
 
         xml += '</imposto>'
         return xml
@@ -1755,7 +1755,7 @@ class ISSQNTot(nfe_110.ISSQNTot):
 class ICMSTot(nfe_110.ICMSTot):
     def __init__(self):
         super(ICMSTot, self).__init__()
-        self.vTotTrib = TagDecimal(nome='vTotTrib', codigo='W16a', tamanho=[1, 15, 1], decimais=[1,  2,  2], raiz='//NFe/infNFe/total/ICMSTot', obrigatorio=False)
+        self.vTotTrib = TagDecimal(nome='vTotTrib', codigo='W16a', tamanho=[1, 15, 1], decimais=[0,  2,  2], raiz='//NFe/infNFe/total/ICMSTot', obrigatorio=False)
 
     def get_xml(self):
         xml = XMLNFe.get_xml(self)
@@ -1802,14 +1802,14 @@ class ICMSTot(nfe_110.ICMSTot):
 class Total(nfe_110.Total):
     def __init__(self):
         super(Total, self).__init__()
+        self.ICMSTot = ICMSTot()
 
 
 class Entrega(nfe_110.Entrega):
     def __init__(self):
         super(Entrega, self).__init__()
-        self.CNPJ    = TagCaracter(nome='CNPJ'   , codigo='G02' , tamanho=[ 0, 14]   , raiz='//NFe/infNFe/retirada')
-        self.CPF     = TagCaracter(nome='CPF'    , codigo='G02a', tamanho=[11, 11]   , raiz='//NFe/infNFe/retirada')
-
+        self.CNPJ    = TagCaracter(nome='CNPJ'   , codigo='G02', tamanho=[14, 14]   , raiz='//NFe/infNFe/entrega')
+        self.CPF     = TagCaracter(nome='CPF'  , codigo='G02a', tamanho=[11, 11]   , raiz='//NFe/infNFe/entrega',)
 
     def get_xml(self):
         if not (self.CNPJ.valor or self.CPF.valor):
@@ -2315,7 +2315,7 @@ class Ide(nfe_110.Ide):
             # "reenraizadas" (propriedade raiz) para poderem ser
             # lidas corretamente
             #
-            self.NFRef = self.le_grupo('//NFe/infNFe/ide/NFref', NFRef)
+            self.NFref = self.le_grupo('//NFe/infNFe/ide/NFref', NFRef)
 
             self.tpImp.xml   = arquivo
             self.tpEmis.xml  = arquivo
