@@ -39,9 +39,11 @@
 # <http://www.gnu.org/licenses/>
 #
 
-import sys
 
-from .processador_nfe import ProcessadorNFe, Certificado, DANFE, DANFCE
+from .processador_nfe import ProcessadorNFe, DANFE, Certificado, DAEDE
 
-if sys.version_info.major == 2:
-    from .processador_nfe import DAEDE
+
+# Pyflakes
+ProcessadorNFe
+DANFE
+Certificado

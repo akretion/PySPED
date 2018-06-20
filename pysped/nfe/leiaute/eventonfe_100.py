@@ -39,10 +39,7 @@
 # <http://www.gnu.org/licenses/>
 #
 
-from __future__ import (division, print_function, unicode_literals,
-                        absolute_import)
-
-from builtins import str
+from __future__ import division, print_function, unicode_literals
 
 from pysped.xml_sped import (ABERTURA, NAMESPACE_NFE, Signature,
                              TagDecimal, TagCaracter, TagDataHoraUTC,
@@ -98,7 +95,7 @@ class InfEvento(XMLNFe):
     def get_xml(self):
         xml = XMLNFe.get_xml(self)
 
-        self.Id.valor = 'ID' + self.tpEvento.valor + self.chNFe.valor + str(self.nSeqEvento.valor).zfill(2)
+        self.Id.valor = 'ID' + self.tpEvento.valor + self.chNFe.valor + unicode(self.nSeqEvento.valor).zfill(2)
 
         xml += self.Id.xml
         xml += self.cOrgao.xml

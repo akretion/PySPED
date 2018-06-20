@@ -39,23 +39,18 @@
 # <http://www.gnu.org/licenses/>
 #
 
-from __future__ import (division, print_function, unicode_literals,
-                        absolute_import)
-
-import sys
-from builtins import str
-from io import BytesIO
-import base64
-import unicodedata
-import os
-import gzip
+from __future__ import division, print_function, unicode_literals
 
 from pysped.xml_sped import (ABERTURA, NAMESPACE_NFE, Signature, TagCaracter,
                              TagDataHora, TagDecimal, TagInteiro, XMLNFe,
                              TagDataHoraUTC)
-from pysped.nfe.leiaute import ESQUEMA_ATUAL_VERSAO_4 as ESQUEMA_ATUAL
+from pysped.nfe.leiaute import ESQUEMA_ATUAL_VERSAO_3 as ESQUEMA_ATUAL
 from pysped.nfe.leiaute.soap_200 import NFeDadosMsg
-from pysped.nfe.leiaute import ProcNFe_310, ProcEvento_100, ProcNFe_400
+from pysped.nfe.leiaute import ProcNFe_310, ProcEvento_100
+import unicodedata
+import os
+import gzip
+from StringIO import StringIO
 
 
 DIRNAME = os.path.dirname(__file__)
@@ -195,8 +190,6 @@ class ResNFe(XMLNFe):
 
     def get_xml(self):
         xml = XMLNFe.get_xml(self)
-        xml += ABERTURA
-        xml += '<resNFe>'
         xml += self.chNFe.xml
         xml += self.CNPJ.xml
         xml += self.CPF.xml
@@ -246,8 +239,6 @@ class ResEvento(XMLNFe):
 
     def get_xml(self):
         xml = XMLNFe.get_xml(self)
-        xml += ABERTURA
-        xml += '<resEvento>'
         xml += self.cOrgao.xml
         xml += self.CNPJ.xml
         xml += self.CPF.xml
@@ -309,14 +300,14 @@ class DocZip(XMLNFe):
         if not self.docZip.valor:
             return ''
 
-        arq = BytesIO()
-        arq.write(base64.b64decode(self.docZip.valor))
+        arq = StringIO()
+        arq.write(self.docZip.valor.decode('base64'))
         arq.seek(0)
         zip = gzip.GzipFile(fileobj=arq)
         texto = zip.read()
         arq.close()
         zip.close()
-        return ABERTURA + texto.decode('utf-8')
+        return texto.decode('utf-8')
 
     @property
     def resposta(self):
@@ -326,32 +317,15 @@ class DocZip(XMLNFe):
         resposta = None
         if self.schema.valor in ('resNFe_v1.00.xsd', 'resNFe_v1.01.xsd'):
             resposta = ResNFe()
-
-            if sys.version_info.major == 2:
-                texto = unicodedata.normalize(b'NFKD', self.texto).encode('ascii', 'ignore')
-            else:
-                texto = unicodedata.normalize('NFKD', self.texto).encode('ascii', 'ignore')
-
-            resposta.xml = texto.decode('utf-8')
-
+            texto = unicodedata.normalize(b'NFKD', self.texto).encode('ascii', 'ignore')
+            resposta.xml = texto
         elif self.schema.valor in ('resEvento_v1.00.xsd', 'resEvento_v1.01.xsd'):
             resposta = ResEvento()
-
-            if sys.version_info.major == 2:
-                texto = unicodedata.normalize(b'NFKD', self.texto).encode('ascii', 'ignore')
-            else:
-                texto = unicodedata.normalize('NFKD', self.texto).encode('ascii', 'ignore')
-
-            resposta.xml = texto.decode('utf-8')
-
+            texto = unicodedata.normalize(b'NFKD', self.texto).encode('ascii', 'ignore')
+            resposta.xml = texto
         elif self.schema.valor == 'procNFe_v3.10.xsd':
             resposta = ProcNFe_310()
             resposta.xml = self.texto
-
-        elif self.schema.valor == 'procNFe_v4.00.xsd':
-            resposta = ProcNFe_400()
-            resposta.xml = self.texto
-
         elif self.schema.valor == 'procEventoNFe_v1.00.xsd':
             resposta = ProcEvento_100()
             resposta.xml = self.texto
