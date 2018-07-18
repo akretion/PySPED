@@ -2489,6 +2489,8 @@ class Fat(XMLNFe):
         xml += self.nFat.xml
         xml += self.vOrig.xml
         xml += self.vDesc.xml
+        if not self.vDesc.valor:
+            xml += '<vDesc>0.00</vDesc>'
         xml += self.vLiq.xml
         xml += '</fat>'
         return xml
